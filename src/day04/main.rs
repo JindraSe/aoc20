@@ -37,7 +37,7 @@ fn validate_year(year: &str, min_year: i16, max_year: i16) -> bool {
 fn validate_height(height: &str) -> bool {
     if height.len() == 4 {
         let (value, unit) = height.split_at(2);
-        
+
         if unit != "in" {
             return false;
         }
@@ -47,9 +47,9 @@ fn validate_height(height: &str) -> bool {
         if parsed_value.is_err() {
             return false;
         }
-        
+
         let unwrapped_value = parsed_value.unwrap();
-        
+
         return unwrapped_value >= 59 && unwrapped_value <= 76;
     }
 
@@ -58,7 +58,7 @@ fn validate_height(height: &str) -> bool {
     }
 
     let (value, unit) = height.split_at(3);
-    
+
     if unit != "cm" {
         return false;
     }
@@ -68,9 +68,9 @@ fn validate_height(height: &str) -> bool {
     if parsed_value.is_err() {
         return false;
     }
-    
+
     let unwrapped_value = parsed_value.unwrap();
-    
+
     return unwrapped_value >= 150 && unwrapped_value <= 193;
 }
 
@@ -97,7 +97,7 @@ fn validate_passport(passport: &str) -> bool {
 }
 
 fn check_for_fields(record: &str, validate: bool) -> CredentialsFieldsPresence {
-    let mut result = CredentialsFieldsPresence { 
+    let mut result = CredentialsFieldsPresence {
         birth: false, issue: false, expires: false,
         height: false, hair: false, eyes: false,
         passport: false, country: false
@@ -142,20 +142,11 @@ fn check_for_fields(record: &str, validate: bool) -> CredentialsFieldsPresence {
     return result;
 }
 
-fn count_records_without_validation(path: &Path) -> usize {
+fn count_records(path: &Path, validate: bool) -> usize {
     return read_to_string(path)
         .expect("Input file not found")
         .split("\n\n")
-        .map(|record| check_for_fields(record, false))
-        .filter(|cfp| cfp.should_accept())
-        .count();
-}
-
-fn count_records_with_validation(path: &Path) -> usize {
-    return read_to_string(path)
-        .expect("Input file not found")
-        .split("\n\n")
-        .map(|record| check_for_fields(record, true))
+        .map(|record| check_for_fields(record, validate))
         .filter(|cfp| cfp.should_accept())
         .count();
 }
@@ -169,9 +160,9 @@ fn main() {
 
     let path_to_input = Path::new(&args[1]);
 
-    let count_without_validation = count_records_without_validation(path_to_input);
-    let count_with_validation = count_records_with_validation(path_to_input);
-    
+    let count_without_validation = count_records(path_to_input, false);
+    let count_with_validation = count_records(path_to_input, true);
+
     println!("Number of good passports: {}", count_without_validation);
     println!("Number of good passports (validated): {}", count_with_validation);
 }

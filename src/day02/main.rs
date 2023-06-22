@@ -2,8 +2,8 @@ use std::{fs::read_to_string, path::Path, env::args};
 
 struct Rule {
     letter: char,
-    min_occurances: u8,
-    max_occurances: u8,
+    low: u8,
+    high: u8,
 }
 
 impl Rule {
@@ -12,28 +12,28 @@ impl Rule {
             word.chars().filter(|ch| ch.clone() == self.letter).count()
         ).expect("Password was to large");
 
-        return count >= self.min_occurances && count <= self.max_occurances;
+        return count >= self.low && count <= self.high;
     }
 
     fn satisfied_by_toboggan(&self, word: &str) -> bool {
-        let first_matches = word.chars().nth(usize::from(self.min_occurances) - 1) == Some(self.letter);
-        let second_matches = word.chars().nth(usize::from(self.max_occurances) - 1) == Some(self.letter);
+        let first_matches = word.chars().nth(usize::from(self.low) - 1) == Some(self.letter);
+        let second_matches = word.chars().nth(usize::from(self.high) - 1) == Some(self.letter);
 
         return first_matches != second_matches;
     }
 }
 
-fn parse_range(range_str: &str) -> Option<(u8, u8)> {
+fn parse_low_high(range_str: &str) -> Option<(u8, u8)> {
     let split_str: Vec<&str> = range_str.split('-').collect();
 
     if split_str.len() != 2 {
         return None;
     }
 
-    let min = split_str[0].parse::<u8>();
-    let max = split_str[1].parse::<u8>();
+    let low = split_str[0].parse::<u8>();
+    let high = split_str[1].parse::<u8>();
 
-    match (min, max) {
+    match (low, high) {
         (Err(_), _) => {
             return None;
         }
@@ -42,8 +42,8 @@ fn parse_range(range_str: &str) -> Option<(u8, u8)> {
             return None;
         }
 
-        (Ok(min_value), Ok(max_value)) => {
-            return Some((min_value, max_value));
+        (Ok(low_value), Ok(high_value)) => {
+            return Some((low_value, high_value));
         }
 
     }
@@ -56,10 +56,10 @@ fn parse_rule(rule_str: &str) -> Option<Rule> {
         return None;
     }
 
-    let range = parse_range(split_str[0]);
+    let low_high = parse_low_high(split_str[0]);
     let letter = split_str[1].chars().nth(0);
 
-    match (range, letter) {
+    match (low_high, letter) {
         (_, None) => {
             return None;
         }
@@ -68,11 +68,11 @@ fn parse_rule(rule_str: &str) -> Option<Rule> {
             return None;
         }
 
-        (Some((min, max)), Some(l)) => {
+        (Some((low, high)), Some(l)) => {
             return Some(Rule {
                 letter: l,
-                min_occurances: min, 
-                max_occurances: max
+                low,
+                high
             });
         }
     }

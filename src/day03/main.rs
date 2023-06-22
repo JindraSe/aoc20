@@ -62,7 +62,7 @@ impl TreeGrid {
         }
     }
 
-    fn from_lines<I>(lines: I) -> TreeGrid 
+    fn from_lines<I>(lines: I) -> TreeGrid
     where I: Iterator<Item = TreeLine> {
         let mut grid = TreeGrid::new();
 
