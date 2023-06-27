@@ -1,13 +1,8 @@
 use std::{path::Path, fs::read_to_string, env::args};
 
+#[derive(Clone)]
 struct AnswerSet {
     set: u32,
-}
-
-impl Clone for AnswerSet {
-    fn clone(&self) -> Self {
-        return AnswerSet { set: self.set.clone() };
-    }
 }
 
 impl AnswerSet {
