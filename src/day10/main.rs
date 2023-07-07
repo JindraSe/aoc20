@@ -22,15 +22,16 @@ fn count_arrangements(joltage_ratings: &Vec<u32>) -> u64 {
     let mut previous_three: [(u32, u64); 3] = [(0, 0), (0, 0), (0, 1)];
 
     for rating in joltage_ratings {
-        let rating_arrangements: u64 = previous_three.iter().map(
-            |(prev_rating, arrangements)| if rating - prev_rating < 4 {
-                arrangements.clone()
-            } else {
-                0
-            }
-        ).sum();
+        let rating_arrangements: u64 = previous_three.iter()
+            .filter(|(prev_rating, _)| rating - prev_rating < 4)
+            .map(|(_, arrangements)| arrangements)
+            .sum();
 
-        previous_three = [previous_three[1], previous_three[2], (rating.clone(), rating_arrangements)];
+        previous_three = [
+            previous_three[1],
+            previous_three[2],
+            (rating.clone(), rating_arrangements)
+        ];
     }
 
     return previous_three[2].1;
