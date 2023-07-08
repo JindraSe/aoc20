@@ -2,12 +2,8 @@ use std::{ env::args, path::Path, fs::read_to_string };
 
 #[derive(Clone, Copy)]
 enum ShipAction {
-    North(u16),
-    South(u16),
-    East(u16),
-    West(u16),
-    Left(u16),
-    Right(u16),
+    Direction(i8, i8, u16),
+    Turn(u16),
     Forward(u16),
 }
 
@@ -17,12 +13,12 @@ impl ShipAction {
         let parsed_value = value.parse::<u16>().expect("Badly formed input file!");
 
         return match command {
-            "N" => ShipAction::North(parsed_value),
-            "S" => ShipAction::South(parsed_value),
-            "E" => ShipAction::East(parsed_value),
-            "W" => ShipAction::West(parsed_value),
-            "L" => ShipAction::Left(parsed_value),
-            "R" => ShipAction::Right(parsed_value),
+            "N" => ShipAction::Direction(0, 1, parsed_value),
+            "S" => ShipAction::Direction(0, -1, parsed_value),
+            "E" => ShipAction::Direction(1, 0, parsed_value),
+            "W" => ShipAction::Direction(-1, 0, parsed_value),
+            "L" => ShipAction::Turn(parsed_value),
+            "R" => ShipAction::Turn(360 - parsed_value),
             "F" => ShipAction::Forward(parsed_value),
             _ => panic!("Badly formed input file!")
         }
@@ -42,34 +38,15 @@ impl ShipStatus {
     fn do_action(&self, action: ShipAction) -> ShipStatus {
         // finally some good pattern matching 😩
         return match action {
-            ShipAction::North(by) => ShipStatus {
+            ShipAction::Direction(east, north, by) => ShipStatus {
                 direction: self.direction,
-                location: (self.location.0, self.location.1 + by as i32)
+                location: (self.location.0 + (by as i32)*(east as i32),
+                           self.location.1 + (by as i32)*(north as i32))
             },
 
-            ShipAction::South(by) => ShipStatus {
-                direction: self.direction,
-                location: (self.location.0, self.location.1 - by as i32)
-            },
-
-            ShipAction::East(by) => ShipStatus {
-                direction: self.direction,
-                location: (self.location.0 + by as i32, self.location.1)
-            },
-
-            ShipAction::West(by) => ShipStatus {
-                direction: self.direction,
-                location: (self.location.0 - by as i32, self.location.1)
-            },
-
-            ShipAction::Left(by) => ShipStatus {
+            ShipAction::Turn(by) => ShipStatus {
                 direction: (self.direction + by) % 360,
-                location: self.location,
-            },
-
-            ShipAction::Right(by) => ShipStatus {
-                direction: (self.direction + (360 - by)) % 360,
-                location: self.location,
+                location: self.location
             },
 
             ShipAction::Forward(by) => ShipStatus {
@@ -99,46 +76,21 @@ impl ShipWaypointStatus {
 
     fn do_action(&self, action: ShipAction) ->ShipWaypointStatus {
         return match action {
-            ShipAction::North(by) => ShipWaypointStatus {
-                waypoint: (self.waypoint.0, self.waypoint.1 + by as i32),
+            ShipAction::Direction(east, north, by) => ShipWaypointStatus {
+                waypoint: (self.waypoint.0 + (by as i32)*(east as i32),
+                           self.waypoint.1 + (by as i32)*(north as i32)),
                 location: self.location
             },
 
-            ShipAction::South(by) => ShipWaypointStatus {
-                waypoint: (self.waypoint.0, self.waypoint.1 - by as i32),
-                location: self.location,
-            },
-
-            ShipAction::East(by) => ShipWaypointStatus {
-                waypoint: (self.waypoint.0 + by as i32, self.waypoint.1),
-                location: self.location,
-            },
-
-            ShipAction::West(by) => ShipWaypointStatus {
-                waypoint: (self.waypoint.0 - by as i32, self.waypoint.1),
-                location: self.location
-            },
-
-            ShipAction::Left(by) => ShipWaypointStatus {
+            ShipAction::Turn(by) => ShipWaypointStatus {
                 waypoint: match by % 360 {
-                    0   => self.waypoint,
-                    90  => (-self.waypoint.1, self.waypoint.0),
+                    0 => self.waypoint,
+                    90 => (-self.waypoint.1, self.waypoint.0),
                     180 => (-self.waypoint.0, -self.waypoint.1),
                     270 => (self.waypoint.1, -self.waypoint.0),
                     _   => panic!("Invalid angle, going diagonally: {}!", by)
                 },
-                location: self.location,
-            },
-
-            ShipAction::Right(by) => ShipWaypointStatus {
-                waypoint: match by % 360 {
-                    0   => self.waypoint,
-                    90  => (self.waypoint.1, -self.waypoint.0),
-                    180 => (-self.waypoint.0, -self.waypoint.1),
-                    270 => (-self.waypoint.1, self.waypoint.0),
-                    _   => panic!("Invalid angle, going diagonally: {}!", by)
-                },
-                location: self.location,
+                location: self.location
             },
 
             ShipAction::Forward(by) => ShipWaypointStatus {
