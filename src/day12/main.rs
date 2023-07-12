@@ -58,7 +58,6 @@ impl ShipStatus {
                     270 => (self.location.0, self.location.1 - by as i32),
                     _   => panic!("Invalid angle, going diagonally: {}!", self.direction)
                 }
-                
             }
         }
     }
@@ -74,7 +73,7 @@ impl ShipWaypointStatus {
         return ShipWaypointStatus { waypoint: (10, 1), location: (0, 0) }
     }
 
-    fn do_action(&self, action: ShipAction) ->ShipWaypointStatus {
+    fn do_action(&self, action: ShipAction) -> ShipWaypointStatus {
         return match action {
             ShipAction::Direction(east, north, by) => ShipWaypointStatus {
                 waypoint: (self.waypoint.0 + (by as i32)*(east as i32),
@@ -97,10 +96,9 @@ impl ShipWaypointStatus {
                 waypoint: self.waypoint,
                 location: (self.location.0 + self.waypoint.0*(by as i32),
                            self.location.1 + self.waypoint.1*(by as i32))
-                
             }
         }
- 
+
     }
 }
 
@@ -136,6 +134,6 @@ fn main() {
     );
 
     println!("The Manhattan distance between the original and the final \
-              location using the waypoint is: {}", 
+              location using the waypoint is: {}",
               final_waypoint_status.location.0.abs() + final_waypoint_status.location.1.abs())
 }
